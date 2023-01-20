@@ -60,9 +60,9 @@ fi
 file1=${b} 
 file2=${m}
 
-_token=$(curl -s -X GET $url -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g')
+_token=$(curl -s -X GET $url -c $cookie  | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g')
  
-id_code=$(curl -s -X POST  $url -b $cookie -c $cookie  \
+id_code=$(curl -s -X POST  $url -b $cookie  \
     -F "_token=$_token" \
     -F "subtitles=@$file1" \
     -F "second-subtitle=@$file2" \
@@ -79,10 +79,10 @@ id_code=$(curl -s -X POST  $url -b $cookie -c $cookie  \
     | grep -oP 'href="(.*?)"' | sed 's/href="//g' | sed 's/"//g' | awk '{print $NF}' FS='/') 
 
 sleep 2
-code=$(curl -s -X GET "$api/$id_code" | grep -oP 'id":(.*?),' | sed 's/id"://g' | sed 's/,//g'  ) 
+code=$(curl -s -c $cookie -X GET "$api/$id_code" | grep -oP 'id":(.*?),' | sed 's/id"://g' | sed 's/,//g'  ) 
  
-_token=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep csrf-token  | grep -oP 'content="(.*?)"' | sed 's/content="//g' | sed 's/"//g')
+_token=$(curl -s  -c $cookie-X GET "$url/$id_code" -b $cookie -c $cookie | grep csrf-token  | grep -oP 'content="(.*?)"' | sed 's/content="//g' | sed 's/"//g')
 
-curl -s -X POST "$urlDonwload/$id_code/$code"  -b $cookie -c $cookie -F "_token=$_token" > ${file3}
+curl -s -b $cookie -X POST "$urlDonwload/$id_code/$code"  -b $cookie -c $cookie -F "_token=$_token" > ${file3}
  
 
