@@ -47,7 +47,7 @@ file1=${b}
 file2=${m}
 
 _token=$(curl -s -X GET $url -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g')
-if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo "Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
 id_code=$(curl -s -X POST  $url -b $cookie -c $cookie  \
     -F "_token=$_token" \
@@ -68,13 +68,13 @@ id_code=$(curl -s -X POST  $url -b $cookie -c $cookie  \
     -H 'TE: trailers' \
     | grep -oP 'href="(.*?)"' | sed 's/href="//g' | sed 's/"//g' | awk '{print $NF}' FS='/') 
 
-if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo "Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
 code=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep wire:key | grep -oP '="(.*?)"' | head -1 | tr -d '="') 
-if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo "Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
 _token=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g' | head -1) 
-if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo "Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
 curl  -s -X POST "$urlDonwload/$id_code/$code"  -b $cookie -c $cookie -F "_token=$_token" -F "_method=post"    > ${file3}
  
