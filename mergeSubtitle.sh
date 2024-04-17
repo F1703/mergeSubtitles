@@ -49,7 +49,6 @@ fi
 file1=${b} 
 file2=${m}
 
-# generar numero aleatorio 
 boundary=""
 for ((i=1; i<=28; i++)); do
     boundary="${boundary}$((RANDOM % 10))"
