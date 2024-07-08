@@ -57,11 +57,11 @@ done
 
 _token=$(curl -s -X GET $url -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g')
 
-echo "Token: "$_token
+# echo "Token: "$_token
 
 if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
-echo "Boundary: "$boundary
+# echo "Boundary: "$boundary
 cat <<EOF > $mi_data
 -----------------------------$boundary
 Content-Disposition: form-data; name="_token"
@@ -125,10 +125,6 @@ Content-Disposition: form-data; name="mergeSubtitleColor"
 Content-Disposition: form-data; name="shouldColorBaseSubtitle"
 
 0
------------------------------$boundary
-Content-Disposition: form-data; name="shouldColorBaseSubtitle"
-
-1
 -----------------------------$boundary
 Content-Disposition: form-data; name="baseSubtitleColor"
 
