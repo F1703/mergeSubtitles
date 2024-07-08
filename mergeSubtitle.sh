@@ -7,6 +7,7 @@ cookie="/tmp/cookiesss.txt"
 mi_data="/tmp/mi_data.txt"
 
 rm $cookie 2>/dev/null
+rm $mi_data 2>/dev/null
 
 modoDeUso() { 
     echo "Modo de uso: $0 -b baseFile.srt -m mergeFile.srt -s outputFile.srt ";
@@ -35,7 +36,6 @@ while getopts "b:m:s:h" z; do
     esac
 done
 shift $((OPTIND-1))
- 
 
 if [ -z "${b}" ] || [ -z "${m}" ]; then
     modoDeUso
@@ -49,20 +49,28 @@ fi
 file1=${b} 
 file2=${m}
 
+# generar numero aleatorio 
 boundary=""
 for ((i=1; i<=28; i++)); do
     boundary="${boundary}$((RANDOM % 10))"
 done
-  
+
 _token=$(curl -s -X GET $url -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g')
+
+echo "Token: "$_token
 
 if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
 
+echo "Boundary: "$boundary
 cat <<EOF > $mi_data
 -----------------------------$boundary
 Content-Disposition: form-data; name="_token"
 
 $_token
+-----------------------------$boundary
+Content-Disposition: form-data; name="fileAmount"
+
+one
 -----------------------------$boundary
 Content-Disposition: form-data; name="subtitles"; filename="$file1"
 Content-Type: application/x-subrip
@@ -118,6 +126,10 @@ Content-Disposition: form-data; name="shouldColorBaseSubtitle"
 
 0
 -----------------------------$boundary
+Content-Disposition: form-data; name="shouldColorBaseSubtitle"
+
+1
+-----------------------------$boundary
 Content-Disposition: form-data; name="baseSubtitleColor"
 
 #ffff54
@@ -133,10 +145,10 @@ id_code=$(curl -s -b $cookie -c $cookie  -X POST  $url   \
     -H 'Sec-Fetch-User: ?1' -H 'TE: trailers' \
     --data-binary "@$mi_data"  | grep -oP 'href="(.*?)"' | sed 's/href="//g' | sed 's/"//g' | awk '{print $NF}' FS='/')
 
-if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo -e "[-] id_code no encontrado\nSaliendo..\n"; exit; fi 
 
 code=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep wire:key | grep -oP '="(.*?)"' | head -1 | tr -d '="') 
-if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo -e "[-] Code no encontrado\nSaliendo..\n"; exit; fi 
 
 _token=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g' | head -1) 
 if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
