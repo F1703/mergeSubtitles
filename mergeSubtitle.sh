@@ -141,14 +141,21 @@ id_code=$(curl -s -b $cookie -c $cookie  -X POST  $url   \
     -H 'Sec-Fetch-User: ?1' -H 'TE: trailers' \
     --data-binary "@$mi_data"  | grep -oP 'href="(.*?)"' | sed 's/href="//g' | sed 's/"//g' | awk '{print $NF}' FS='/')
 
-if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo -e "[-] id_code no encontrado\nSaliendo..\n"; exit; fi 
+if [ $(echo -n $id_code | wc -c ) -lt 1  ]; then echo -e "[-] id_code no encontrado\nSaliendo..\n"; fi 
 
-code=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep wire:key | grep -oP '="(.*?)"' | head -1 | tr -d '="') 
-if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo -e "[-] Code no encontrado\nSaliendo..\n"; exit; fi 
+if [[ -n $id_code ]] ; then 
+    code=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep wire:key | grep -oP '="(.*?)"' | head -1 | tr -d '="') 
+    echo  "Code: $code" 
+    if [ $(echo -n $code | wc -c ) -lt 1  ]; then echo -e "[-] Code no encontrado\nSaliendo..\n"; fi 
+fi 
 
-_token=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g' | head -1) 
-if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; exit; fi 
+if [[ -n $code ]] ; then
+    _token=$(curl -s -X GET "$url/$id_code" -b $cookie -c $cookie | grep _token  | grep -oP 'value="(.*?)"' | sed 's/value=//g' | sed 's/"//g' | head -1) 
+    echo  "Token: $_token" 
+    if [ $(echo -n $_token | wc -c ) -lt 1  ]; then echo -e "[-] Token no encontrado\nSaliendo..\n"; fi 
+fi 
 
-curl  -s -X POST "$urlDonwload/$id_code/$code"  -b $cookie -c $cookie -F "_token=$_token" -F "_method=post"   > ${file3}
- 
+if [[ -n $_token ]] ; then 
+    curl  -s -X POST "$urlDonwload/$id_code/$code"  -b $cookie -c $cookie -F "_token=$_token" -F "_method=post"   > ${file3}
+fi  
  
