@@ -4,21 +4,72 @@ Este script automatiza el proceso de combinar archivos `.srt` utilizando la herr
 
 ---
 
-## 📦 Instalación
+## 📌 Instalación y dependencias
 
-Instalá Puppeteer:
+- **1. Instalá npm (el gestor de paquetes de Node.js)**
 
-```bash
-npm install puppeteer@latest
-```
+    ```bash
+    sudo apt update
+    sudo apt install -y npm
+    ```
 
-Hacelo ejecutable si querés correrlo directamente:
+- **2. Instalá n (gestor de versiones de Node.js)**
 
-```bash
-chmod +x mergeSubtitle.js
-```
+    `n` permite instalar y cambiar entre distintas versiones de Node.js fácilmente:
+
+    ```bash
+    sudo npm install -g n
+    ```
+
+
+- **3. Instalá Node.js 18 (o la versión LTS más reciente)**
+
+    Podés instalar la última versión LTS (Long-Term Support):
+
+    ```bash
+    sudo npm install -g n
+    ```
+
+   O bien, una versión específica (por ejemplo, Node.js 18):
+
+
+    ```bash
+    sudo n 18
+    ```
+
+    > 💡 Nota: Si después de instalar n no podés usar node o npm, puede deberse a que `/usr/local/bin` no esté en tu `$PATH`.
+
+    Verificá si está presente:
+
+    ```bash
+    echo $PATH
+    ```
+
+    Si no lo está, agregalo manualmente a tu entorno:
+
+    ```bash
+    echo 'export PATH="/usr/local/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+
+- **4. Instalá Puppeteer**
+
+    Una vez que tengas Node.js correctamente instalado, podés instalar Puppeteer:
+
+    ```bash
+    npm install puppeteer@latest
+    ```
+
+- **5. Hacelo ejecutable (opcional)**
+
+    Si querés ejecutar directamente el script:
+
+    ```bash
+    chmod +x mergeSubtitle.js
+    ```
 
 ---
+
 
 ## 🧪 Uso básico
 
