@@ -16,7 +16,7 @@ let verbose = false;
 let outputFile = 'sub.srt';
 let baseColor = '#ffff54';
 let mergeColor = '#ffffff';
-let timeout =  120000 ;
+let timeout = 120000;
 
 function vLog(...args) {
   if (verbose) console.log(...args);
@@ -62,13 +62,13 @@ if (!baseFile || !mergeFile) {
   await page.setRequestInterception(true);
   page.on('request', (request) => {
     if (['image', 'stylesheet', 'font'].includes(request.resourceType())) {
-      request.abort(); 
+      request.abort();
     } else {
       request.continue();
     }
   });
-  
-  await page.goto('https://subtitletools.com/merge-subtitles-online', { waitUntil: 'networkidle0' , timeout: timeout });
+
+  await page.goto('https://subtitletools.com/merge-subtitles-online', { waitUntil: 'networkidle0', timeout: timeout });
 
   // Subir archivos
   const input1 = await page.$('input[name="subtitles"]');
@@ -79,18 +79,18 @@ if (!baseFile || !mergeFile) {
 
   await page.waitForSelector('input[name="shouldColorBaseSubtitle"]');
 
-  
+
   // Activar color para el subtitle "merge"
   if (mergeColor) {
     vLog(`[+] Aplicando color al subtitle merge: ${mergeColor}`);
     await page.evaluate((color) => {
       const colorCheckbox = document.querySelector('input[name="shouldColorMergeSubtitle"]');
       if (colorCheckbox && !colorCheckbox.checked) {
-        colorCheckbox.click(); 
+        colorCheckbox.click();
       }
       const colorInput = document.querySelector('input[name="mergeSubtitleColor"]');
       if (colorInput) colorInput.value = color;
-    }, mergeColor); 
+    }, mergeColor);
   }
 
   // Activar color para el subtitle "base"
@@ -99,7 +99,7 @@ if (!baseFile || !mergeFile) {
     await page.evaluate((color) => {
       const colorCheckbox = document.querySelector('input[name="shouldColorBaseSubtitle"]');
       if (colorCheckbox && !colorCheckbox.checked) {
-        colorCheckbox.click(); 
+        colorCheckbox.click();
       }
       const colorInput = document.querySelector('input[name="baseSubtitleColor"]');
       if (colorInput) colorInput.value = color;
@@ -119,34 +119,37 @@ if (!baseFile || !mergeFile) {
   // if (verbose) await page.screenshot({ path: 'debug_form.png', fullPage: true });
   await page.waitForSelector('form[action*="download-file-job"]', { timeout: timeout });
 
-  // Obtener el _token y _method desde el formulario de descarga
-  const formAction = await page.$eval('form[action*="download-file-job"]', form => form.action);
-  const _token = await page.$eval('input[name="_token"]', input => input.value);
-  const _method = await page.$eval('input[name="_method"]', input => input.value);
-  
   // Enviar el formulario de descarga
   vLog('[+] Descargando subtítulo combinado...');
-  const downloadResponse = await page.evaluate(async (formAction, _token, _method) => {
-    const formData = new FormData();
-    formData.append('_token', _token);
-    formData.append('_method', _method);
 
-    const requestOptions = {
-      method: 'POST',
-      body: formData,
+  const downloadResult = await page.$eval('form[action*="download-file-job"]', async (form) => {
+    const formData = new FormData(form);
+    const response = await fetch(form.action, { method: form.method.toUpperCase() || 'POST', body: formData });
+    const contentType = response.headers.get('content-type') || '';
+    const body = await response.text();
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      contentType,
+      body
     };
+  }
+  );
 
-    const response = await fetch(formAction, requestOptions);
-    return await response.text(); 
-  }, formAction, _token, _method);
- 
-  // Guardar archivo si es necesario
-  fs.writeFileSync(outputFile, downloadResponse);
+  if (!downloadResult.ok) {
+    throw new Error(`Error al descargar: HTTP ${downloadResult.status}\n${downloadResult.body}`);
+  }
+
+  if (downloadResult.contentType.includes('text/html') || downloadResult.body.includes('<!DOCTYPE html')) {
+    throw new Error('El servidor devolvió HTML en lugar del subtítulo combinado. Revisá la respuesta.');
+  }
+
+  fs.writeFileSync(outputFile, downloadResult.body, 'utf8');
 
   vLog(`[+] Subtítulo combinado guardado en: ${outputFile}`);
 
-  await page.waitForSelector('body'); 
-
+  await page.waitForSelector('body');
   await browser.close();
-  
+
 })();
